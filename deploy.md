@@ -1,84 +1,164 @@
-# Solbeg Agent — Deploy
+# Solbeg Content Agent — Deploy
 
 You are deploying the Solbeg IT Post Generator agent into the current working directory.
-Execute all steps below in order. Adapt commands to the user's OS automatically.
+Execute all steps below in order. Detect the user's OS automatically and use the appropriate commands.
 
 ---
 
-## Step 1 — Check prerequisites
+## Step 1 — Detect OS
 
-Check if Python 3 is installed:
+Detect the operating system:
 ```bash
-python3 --version || python --version
+uname -s 2>/dev/null || echo "Windows"
 ```
 
-If not installed, tell the user to install Python 3 from https://python.org and stop.
+- `Darwin` → macOS
+- `Linux` → Linux
+- anything else / error → Windows
+
+Keep this in context for all subsequent steps.
 
 ---
 
-## Step 2 — Download the repository
-
-Download and extract the repository into the current directory.
+## Step 2 — Download and extract the repository
 
 **macOS / Linux:**
 ```bash
-curl -L https://github.com/YOUR_USERNAME/solbeg-content-agent/archive/refs/heads/main.zip -o /tmp/solbeg-content-agent.zip
-unzip -q /tmp/solbeg-content-agent.zip -d /tmp/solbeg-extract
-cp -r /tmp/solbeg-extract/solbeg-content-agent-main/. .
-rm -rf /tmp/solbeg-content-agent.zip /tmp/solbeg-extract
+curl -L https://github.com/YOUR_USERNAME/solbeg-content-agent/archive/refs/heads/main.zip -o /tmp/sca.zip
+unzip -q /tmp/sca.zip -d /tmp/sca-extract
+cp -r "/tmp/sca-extract/solbeg-content-agent-main/." .
+rm -rf /tmp/sca.zip /tmp/sca-extract
 ```
 
 **Windows (PowerShell):**
 ```powershell
-Invoke-WebRequest -Uri "https://github.com/YOUR_USERNAME/solbeg-content-agent/archive/refs/heads/main.zip" -OutFile "$env:TEMP\solbeg-content-agent.zip"
-Expand-Archive -Path "$env:TEMP\solbeg-content-agent.zip" -DestinationPath "$env:TEMP\solbeg-extract" -Force
-Copy-Item -Path "$env:TEMP\solbeg-extract\solbeg-content-agent-main\*" -Destination "." -Recurse -Force
-Remove-Item "$env:TEMP\solbeg-content-agent.zip","$env:TEMP\solbeg-extract" -Recurse -Force
+Invoke-WebRequest -Uri "https://github.com/YOUR_USERNAME/solbeg-content-agent/archive/refs/heads/main.zip" -OutFile "$env:TEMP\sca.zip"
+Expand-Archive -Path "$env:TEMP\sca.zip" -DestinationPath "$env:TEMP\sca-extract" -Force
+Copy-Item -Path "$env:TEMP\sca-extract\solbeg-content-agent-main\*" -Destination "." -Recurse -Force
+Remove-Item "$env:TEMP\sca.zip","$env:TEMP\sca-extract" -Recurse -Force
 ```
 
 ---
 
-## Step 3 — Run the setup script
+## Step 3 — Create folder structure
 
+**macOS / Linux:**
 ```bash
-python3 setup.py
+mkdir -p .claude/skills
+mkdir -p "03-Resources/Selling Post Guidebook"
+mkdir -p "03-Resources/solbeg/Posts"
+mkdir -p 00-Inbox 01-Projects 02-Areas 04-Archive
 ```
 
-or on Windows:
+**Windows:**
+```powershell
+New-Item -ItemType Directory -Force -Path ".claude\skills","03-Resources\Selling Post Guidebook","03-Resources\solbeg\Posts","00-Inbox","01-Projects","02-Areas","04-Archive"
+```
+
+---
+
+## Step 4 — Copy skills
+
+**macOS / Linux:**
 ```bash
-python setup.py
+cp -r skills/. .claude/skills/
 ```
 
-The script will:
-- Create all required folders
-- Copy skills to `.claude/skills/`
-- Copy guidebooks to `03-Resources/Selling Post Guidebook/`
-- Copy company context to `03-Resources/solbeg/`
-- Copy `CLAUDE.md` to the vault root
-- Install `yt-dlp`
+**Windows:**
+```powershell
+Copy-Item -Path "skills\*" -Destination ".claude\skills\" -Recurse -Force
+```
 
 ---
 
-## Step 4 — Verify
+## Step 5 — Copy guidebooks and company context
 
-After setup.py completes, confirm:
-1. `.claude/skills/` contains 8 skill folders
-2. `03-Resources/solbeg/Solbeg - Company Summary.md` exists
-3. `03-Resources/Selling Post Guidebook/` contains guidebook files
+**macOS / Linux:**
+```bash
+cp -r guidebooks/. "03-Resources/Selling Post Guidebook/"
+cp -r solbeg/. "03-Resources/solbeg/"
+```
 
-If any are missing, report the issue to the user.
+**Windows:**
+```powershell
+Copy-Item -Path "guidebooks\*" -Destination "03-Resources\Selling Post Guidebook\" -Recurse -Force
+Copy-Item -Path "solbeg\*" -Destination "03-Resources\solbeg\" -Recurse -Force
+```
 
 ---
 
-## Step 5 — Report success
+## Step 6 — Install yt-dlp
+
+Try each method in order, stop at first success:
+
+**Method 1 — pip (if Python is installed):**
+```bash
+pip install yt-dlp --quiet 2>/dev/null || pip3 install yt-dlp --quiet 2>/dev/null || pip install yt-dlp --quiet --break-system-packages 2>/dev/null
+```
+
+**Method 2 — Homebrew (macOS):**
+```bash
+brew install yt-dlp 2>/dev/null
+```
+
+**Method 3 — winget (Windows):**
+```powershell
+winget install yt-dlp 2>$null
+```
+
+**Method 4 — standalone binary (macOS/Linux, no Python needed):**
+```bash
+# macOS
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o /usr/local/bin/yt-dlp && chmod +x /usr/local/bin/yt-dlp
+
+# Linux
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && chmod +x /usr/local/bin/yt-dlp
+```
+
+**Method 5 — standalone binary (Windows, no Python needed):**
+```powershell
+Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "$env:LOCALAPPDATA\Microsoft\WindowsApps\yt-dlp.exe"
+```
+
+If all methods fail — skip silently. yt-dlp is only needed for YouTube search. The agent works without it, YouTube search skill will be unavailable.
+
+---
+
+## Step 7 — Clean up repo files (optional)
+
+Remove source folders that were copied and are no longer needed at the root:
+```bash
+rm -rf skills guidebooks solbeg setup.py deploy.md
+```
+
+Windows:
+```powershell
+Remove-Item -Recurse -Force skills,guidebooks,solbeg,setup.py,deploy.md -ErrorAction SilentlyContinue
+```
+
+---
+
+## Step 8 — Verify
+
+Check that the following exist:
+- `.claude/skills/` — should contain 8 folders
+- `03-Resources/solbeg/Solbeg - Company Summary.md`
+- `03-Resources/Selling Post Guidebook/` — should contain .md files
+- `CLAUDE.md` in the current directory
+
+Report what was found and what (if anything) is missing.
+
+---
+
+## Step 9 — Report to user
 
 Tell the user:
 
-> ✅ **Агент развёрнут и готов к работе!**
+> ✅ **Agent deployed and ready!**
 >
-> Установлено скилов: 8
-> Гайдбуки: ✓
-> Контекст компании: ✓
-> yt-dlp: ✓
+> Skills installed: 8
+> Guidebooks: ✓
+> Company context: ✓
+> yt-dlp: ✓ (or: ⚠ not installed — YouTube search unavailable)
 >
-> Напиши **"напиши пост"** — и агент начнёт работу.
+> Type **"write a post"** to get started.

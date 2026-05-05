@@ -178,7 +178,7 @@ Run all three in parallel. Read each file found.
 
 Before writing, ask the user:
 
-> "На каком языке написать пост? (English / Русский / другой)"
+> "What language should the post be written in? (English / Russian / other)"
 
 Wait for the answer. Write the entire post — including hook, body, bridge, and CTA — in the language the user specifies.
 
@@ -246,13 +246,13 @@ Present the post ready to copy-paste:
 ---
 ```
 
-Ask: "Хочешь что-то скорректировать (тон, длину, CTA)? Или сохраняем пост?"
+Ask: "Would you like to adjust anything (tone, length, CTA)? Or shall we save it?"
 
 ---
 
 ## Step 4 — Save the Post and Update History
 
-Do this **immediately after the user approves the post** (says "сохраняем", "ок", "save", "да", or similar). Do not wait for a separate explicit save command.
+Do this **immediately after the user approves the post** (says "save", "ok", "yes", "looks good", or similar). Do not wait for a separate explicit save command.
 
 ### 4a. Save the Post as an Obsidian Note
 
@@ -295,7 +295,7 @@ Append a new row to `03-Resources/solbeg/posts-history.md`:
 ### 4c. Confirm to the User
 
 After both files are written, say:
-> "Пост сохранён в `Posts/[filename]` и добавлен в историю постов."
+> "Post saved to `Posts/[filename]` and added to posts history."
 
 Then immediately proceed to **Step 5**.
 
@@ -325,15 +325,15 @@ If at least one adapter is found, present:
 
 ```
 ---
-Хочешь адаптировать этот пост под конкретную соц сеть?
+Would you like to adapt this post for a specific platform?
 
-Найденные адаптеры:
+Available adapters:
 1. [Adapter title] — [1-line description]
 2. [Adapter title] — [1-line description]
 [...all found adapters...]
 
-Напиши номер адаптера — и я адаптирую пост.
-Или напиши "нет" / "пропустить", чтобы завершить.
+Reply with the adapter number to adapt the post.
+Or type "no" / "skip" to finish.
 ```
 
 If no adapters are found, skip this step silently.
